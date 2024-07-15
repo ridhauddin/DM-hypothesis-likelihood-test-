@@ -20,66 +20,62 @@ yd = array([42,12.6,5.26,3.04,1.54,0.96,0.427,0.21,0.086])
 #y_err = array([0.125,0.03,0.04])
 
 
-k=0
-ww=np.zeros([44,3])
-for b in range(1,45):	
-	kkfile="flux_%s_%s.txt"%(cluster,b)
+
 	
-	zd = np.loadtxt(kkfile)[1:,0]
+zd = np.loadtxt(kkfile)[1:,0]
 #########insitu model+DM###########
 
-	def insituDM(x,scr0,a,vs):
-		U=scr0*(x)**(-a)*np.exp(-x**(0.5)/vs**(0.5))
-		return U
+def insituDM(x,scr0,a,vs):
+	U=scr0*(x)**(-a)*np.exp(-x**(0.5)/vs**(0.5))
+	return U
     			
-	mod =Model(insituDM)
-	params = mod.make_params(scr0=1, a=1, vs=1)
-	params['scr0'].max = 10
-	params['scr0'].min = 0.01
-	params['a'].max = 5
-	params['a'].min = 0.01
-	params['vs'].max = 5
-	params['vs'].min = 0.01
-	result1 = mod.fit(np.abs(yd-zd),params, x=xd, method='leastsq', weights=1+(y_err/yd))
-	#print(result1.fit_report())	
-	A=result1.chisqr
-	L=np.exp(-A**2)
+mod =Model(insituDM)
+params = mod.make_params(scr0=1, a=1, vs=1)
+params['scr0'].max = 10
+params['scr0'].min = 0.01
+params['a'].max = 5
+params['a'].min = 0.01
+params['vs'].max = 5
+params['vs'].min = 0.01
+result1 = mod.fit(np.abs(yd-zd),params, x=xd, method='leastsq', weights=1+(y_err/yd))
+#print(result1.fit_report())	
+A=result1.chisqr
+L=np.exp(-A**2)
 	
 ##############insitu model#############
-	def insitu(x,scr0,a,vs):
-   	 	return scr0*(x)**(-a)*np.exp(-x**(0.5)/vs**(0.5))
+def insitu(x,scr0,a,vs):
+   	 return scr0*(x)**(-a)*np.exp(-x**(0.5)/vs**(0.5))
 
-	mod2 =Model(insitu)
-	params = mod2.make_params(scr0=1, a=1, vs=1)
-	params['scr0'].max = 10
-	params['scr0'].min = 0.01
-	params['a'].max = 5
-	params['a'].min = 0.01
-	params['vs'].max = 5
-	params['vs'].min = 0.01
-	result2 = mod2.fit(yd, params,x=xd, method='leastsq', weights=1+(y_err/yd))
-	#print(result2.fit_report())		
-	B=result2.chisqr
-	L1=np.exp(-B**2)
+mod2 =Model(insitu)
+params = mod2.make_params(scr0=1, a=1, vs=1)
+params['scr0'].max = 10
+params['scr0'].min = 0.01
+params['a'].max = 5
+params['a'].min = 0.01
+params['vs'].max = 5
+params['vs'].min = 0.01
+result2 = mod2.fit(yd, params,x=xd, method='leastsq', weights=1+(y_err/yd))
+#print(result2.fit_report())		
+B=result2.chisqr
+L1=np.exp(-B**2)
 
 #########plotting##########
 
-	TS=-2*np.log(L1/L)
-	ww[b-1,0]=TS
+TS=-2*np.log(L1/L)
 
-	print('-------------------------------')
-	print('Test Statistic Value   DM likelihood   Null likelihood')
-	print(TS,L,L1)
-	print('-------------------------------')
-	print('Insitu+DM (DM hypothesis)')
-	print('Parameter    Value       Stderr')
-	for name, param in result1.params.items():
-    		print(f'{name:7s} {param.value:11.5f} {param.stderr:11.5f}')
-	print('-------------------------------')
-	print('Insitu (Null hypothesiss)')
-	print('Parameter    Value       Stderr')
-	for name, param in result2.params.items():
-    		print(f'{name:7s} {param.value:11.5f} {param.stderr:11.5f}')
+print('-------------------------------')
+print('Test Statistic Value   DM likelihood   Null likelihood')
+print(TS,L,L1)
+print('-------------------------------')
+print('Insitu+DM (DM hypothesis)')
+print('Parameter    Value       Stderr')
+for name, param in result1.params.items():
+    	print(f'{name:7s} {param.value:11.5f} {param.stderr:11.5f}')
+print('-------------------------------')
+print('Insitu (Null hypothesiss)')
+print('Parameter    Value       Stderr')
+for name, param in result2.params.items():
+    	print(f'{name:7s} {param.value:11.5f} {param.stderr:11.5f}')
 
 
 ci=0.05 * np.std(result1.best_fit) / np.mean(result1.best_fit)
@@ -102,8 +98,8 @@ plt.ylabel("Radio Flux (jy)")
 plt.show()
 
 
-outfile='TS6_%s.out'%cluster
-line1=' TStotal   TSbb    TSmumu '
+outfile='TS_%s.out'%cluster
+line1=' TS'
 latesttable=ww
 np.savetxt(outfile,latesttable,'%25.15e', header=line1)
 
